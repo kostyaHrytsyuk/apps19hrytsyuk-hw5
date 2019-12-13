@@ -4,6 +4,11 @@ import ua.edu.ucu.stream.*;
 
 public class StreamApp {
 
+    // 1. Що мається на увазі під термінальним методом?
+    // 2. Чи можливо створити метод який би приймав Action і обходив масив відповідно
+    // 3. Що краще використати як внутрішню колекцію? ArrayList, Queue?
+    // 4. Як уникнути дублювання коду? Приклад з першого завдання.
+
     public static int streamOperations(IntStream intStream) {
         //IntStream intStream = AsIntStream.of(-1, 0, 1, 2, 3); // input values
         int res = intStream

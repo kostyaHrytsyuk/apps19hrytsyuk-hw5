@@ -2,39 +2,63 @@ package ua.edu.ucu.stream;
 
 import ua.edu.ucu.function.*;
 
-public class AsIntStream implements IntStream {
+import java.util.ArrayList;
 
-    private AsIntStream() {
-        // To Do
+public class AsIntStream implements IntStream {
+    ArrayList<Integer> innerCol;
+    
+    private AsIntStream(int... values) {
+        this.innerCol = new ArrayList<Integer>();
+        addItems(values);
     }
 
     public static IntStream of(int... values) {
-        return null;
+        IntStream stream = new AsIntStream(values);
+        return stream;
     }
 
     @Override
     public Double average() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkInnerCol();
+        return (double) sum()/count();
     }
 
     @Override
     public Integer max() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkInnerCol();
+        int res = Integer.MIN_VALUE;
+        for (int i: this.innerCol) {
+            if (i > res) {
+                res = i;
+            }
+        }
+        return res;
     }
 
     @Override
     public Integer min() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkInnerCol();
+        int res = Integer.MAX_VALUE;
+        for (int i: this.innerCol) {
+            if (i < res) {
+                res = i;
+            }
+        }
+        return res;
     }
 
     @Override
     public long count() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.innerCol.size();
     }
 
     @Override
     public Integer sum() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int res = 0;
+        for (int i: this.innerCol) {
+            res += i;
+        }
+        return res;
     }
 
     @Override
@@ -67,4 +91,15 @@ public class AsIntStream implements IntStream {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    private void addItems(int... values) {
+        for (int i: values) {
+            this.innerCol.add(i);
+        }
+    }
+
+    private void checkInnerCol() {
+        if (this.innerCol.isEmpty()) {
+            throw new IllegalArgumentException("Stream is empty!");
+        }
+    }
 }
