@@ -61,9 +61,6 @@ public class AsIntStream implements IntStream {
     @Override
     public Integer sum() {
         int res = 0;
-//        for (int i: this.innerCol) {
-//            res += i;
-//        }
         while (this.iterator.hasNext()) {
             res += iterator.next();
         }
@@ -98,7 +95,11 @@ public class AsIntStream implements IntStream {
 
     @Override
     public int reduce(int identity, IntBinaryOperator op) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        while (this.iterator.hasNext()) {
+            identity = op.apply(identity, this.iterator.next());
+        }
+
+        return identity;
     }
 
     @Override
@@ -200,6 +201,27 @@ public class AsIntStream implements IntStream {
                 this.metaIterator = this.meta.iterator();
             }
             return this.metaIterator.next();
+        }
+    }
+
+    private class ReduceIterator implements Iterator<Integer> {
+        private IntBinaryOperator binaryOperator;
+        private int identity;
+
+        ReduceIterator(int identity, IntBinaryOperator operator) {
+            this.identity = identity;
+            this.binaryOperator = operator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public Integer next() {
+            int temp = this.binaryOperator.apply(identity, iterator.next());
+            return temp;
         }
     }
 }
