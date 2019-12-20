@@ -9,18 +9,11 @@ public class AsIntStream implements IntStream {
     private Iterator<Integer> iterator;
     
     private AsIntStream(Iterator<Integer> iter) {
-        // this.innerCol = new ArrayList<>();
-        // iter.forEachRemaining(innerCol::add);
         this.iterator = iter;
     }
 
-    public Iterator<Integer> getIterator() {
-        return this.iterator;
-    }
-
     public static IntStream of(int... values) {
-        IntStream stream = new AsIntStream(addItems(values));
-        return stream;
+        return new AsIntStream(addItems(values));
     }
 
     @Override
@@ -76,7 +69,9 @@ public class AsIntStream implements IntStream {
 
     @Override
     public void forEach(IntConsumer action) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        while (this.iterator.hasNext()) {
+            action.accept(this.iterator.next());
+        }
     }
 
     @Override
@@ -116,11 +111,11 @@ public class AsIntStream implements IntStream {
     }
 
     private static Iterator<Integer> addItems(int... values) {
-        ArrayList<Integer> temp = new ArrayList<>();
+        ArrayList<Integer> innerCol = new ArrayList<>();
         for (int i: values) {
-            temp.add(i);
+            innerCol.add(i);
         }
-        return temp.iterator();
+        return innerCol.iterator();
     }
 
     private void checkInnerCol() {
@@ -131,7 +126,6 @@ public class AsIntStream implements IntStream {
 
     private class FilterIterator implements Iterator<Integer>{
         private IntPredicate predicate;
-        private int counter = 0;
 
         FilterIterator(IntPredicate predicate) {
             this.predicate = predicate;
@@ -139,16 +133,13 @@ public class AsIntStream implements IntStream {
 
         @Override
         public boolean hasNext() {
-            // return counter < innerCol.size();
             return iterator.hasNext();
         }
 
         @Override
         public Integer next() {
             do {
-                // int temp = innerCol.get(counter);
                 int temp = iterator.next();
-                counter++;
                 if (predicate.test(temp)) {
                     return temp;
                 }
@@ -171,8 +162,7 @@ public class AsIntStream implements IntStream {
 
         @Override
         public Integer next() {
-            int temp = iterator.next();
-            return operator.apply(temp);
+            return operator.apply(iterator.next());
         }
     }
 
@@ -201,27 +191,6 @@ public class AsIntStream implements IntStream {
                 this.metaIterator = this.meta.iterator();
             }
             return this.metaIterator.next();
-        }
-    }
-
-    private class ReduceIterator implements Iterator<Integer> {
-        private IntBinaryOperator binaryOperator;
-        private int identity;
-
-        ReduceIterator(int identity, IntBinaryOperator operator) {
-            this.identity = identity;
-            this.binaryOperator = operator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Integer next() {
-            int temp = this.binaryOperator.apply(identity, iterator.next());
-            return temp;
         }
     }
 }
