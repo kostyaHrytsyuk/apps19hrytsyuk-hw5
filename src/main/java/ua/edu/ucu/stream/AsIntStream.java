@@ -14,6 +14,10 @@ public class AsIntStream implements IntStream {
         this.iterator = iter;
     }
 
+    public Iterator<Integer> getIterator() {
+        return this.iterator;
+    }
+
     public static IntStream of(int... values) {
         IntStream stream = new AsIntStream(addItems(values));
         return stream;
@@ -87,7 +91,9 @@ public class AsIntStream implements IntStream {
 
     @Override
     public IntStream flatMap(IntToIntStreamFunction func) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Iterable<Integer> flatted = () -> new FlatMapIterator(func);
+
+        return new AsIntStream(flatted.iterator());
     }
 
     @Override
@@ -97,7 +103,15 @@ public class AsIntStream implements IntStream {
 
     @Override
     public int[] toArray() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       ArrayList<Integer> innerCol = new ArrayList<>();
+       while (this.iterator.hasNext()) {
+           innerCol.add(this.iterator.next());
+       }
+       int[] res = new int[innerCol.size()];
+       for (int i = 0; i < innerCol.size(); i++) {
+           res[i] = innerCol.get(i);
+       }
+       return res;
     }
 
     private static Iterator<Integer> addItems(int... values) {
@@ -162,15 +176,30 @@ public class AsIntStream implements IntStream {
     }
 
     private class FlatMapIterator implements Iterator<Integer> {
+        private IntToIntStreamFunction streamFunction;
+        private ArrayList<Integer> meta;
+        private Iterator<Integer> metaIterator;
+
+        FlatMapIterator(IntToIntStreamFunction streamFunction) {
+            this.streamFunction = streamFunction;
+            this.meta = new ArrayList<>();
+        }
 
         @Override
         public boolean hasNext() {
-            return false;
+            return iterator.hasNext() || this.metaIterator.hasNext();
         }
 
         @Override
         public Integer next() {
-            return null;
+            if (iterator.hasNext()) {
+                IntStream temp = this.streamFunction.applyAsIntStream(iterator.next());
+                for (int i: temp.toArray()) {
+                    this.meta.add(i);
+                }
+                this.metaIterator = this.meta.iterator();
+            }
+            return this.metaIterator.next();
         }
     }
 }

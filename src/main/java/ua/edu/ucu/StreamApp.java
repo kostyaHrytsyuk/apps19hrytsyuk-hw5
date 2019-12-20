@@ -15,9 +15,9 @@ public class StreamApp {
     public static int streamOperations(IntStream intStream) {
         IntStream fltr = intStream.filter(x -> x > 0); // 1, 2, 3
         IntStream mppd = fltr.map(x -> x * x); // 1, 4, 9
-        int res = mppd.sum();
+        IntStream fltmppd = mppd.flatMap(x -> AsIntStream.of(x - 1, x, x + 1)); // 0, 1, 2, 3, 4, 5, 8, 9, 10
+        int res = fltmppd.sum();
 
-                // .flatMap(x -> AsIntStream.of(x - 1, x, x + 1)) // 0, 1, 2, 3, 4, 5, 8, 9, 10
                 //.reduce(0, (sum, x) -> sum += x); // 42
         return 42;
     }
