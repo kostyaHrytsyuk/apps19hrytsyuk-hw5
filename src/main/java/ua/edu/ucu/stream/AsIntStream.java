@@ -2,9 +2,11 @@ package ua.edu.ucu.stream;
 
 import ua.edu.ucu.function.*;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class AsIntStream implements IntStream {
+    private Integer counter;
     ArrayList<Integer> innerCol;
     private Iterator<Integer> iterator;
     
@@ -18,13 +20,22 @@ public class AsIntStream implements IntStream {
 
     @Override
     public Double average() {
-        checkInnerCol();
-        return (double) sum()/count();
+        long sample = 0;
+        this.counter = 0;
+        while (this.iterator.hasNext()) {
+            sample += this.iterator.next();
+            this.counter++;
+        }
+        if (this.counter==0) {
+            return 0.0;
+        } else {
+            return (double) sample/this.counter;
+        }
     }
 
     @Override
     public Integer max() {
-        checkInnerCol();
+        checkEmptyStream();
         int res = Integer.MIN_VALUE;
         for (int i: this.innerCol) {
             if (i > res) {
@@ -36,7 +47,7 @@ public class AsIntStream implements IntStream {
 
     @Override
     public Integer min() {
-        checkInnerCol();
+        checkEmptyStream();
         int res = Integer.MAX_VALUE;
         for (int i: this.innerCol) {
             if (i < res) {
@@ -48,7 +59,15 @@ public class AsIntStream implements IntStream {
 
     @Override
     public long count() {
-        return this.innerCol.size();
+        if (this.counter != null) {
+            return this.counter;
+        }
+        this.counter = 0;
+        while (iterator.hasNext()) {
+            iterator.next();
+            this.counter++;
+        }
+        return this.counter;
     }
 
     @Override
@@ -62,13 +81,21 @@ public class AsIntStream implements IntStream {
 
     @Override
     public IntStream filter(IntPredicate predicate) {
-        Iterable<Integer> filtered = () -> new FilterIterator(predicate);
+        checkEmptyStream();
+        ArrayList<Integer> filtered = new ArrayList<>();
+        while (iterator.hasNext()) {
+            int el = iterator.next();
+            if (predicate.test(el)) {
+                filtered.add(el);
+            }
+        }
 
         return new AsIntStream(filtered.iterator());
     }
 
     @Override
     public void forEach(IntConsumer action) {
+        checkEmptyStream();
         while (this.iterator.hasNext()) {
             action.accept(this.iterator.next());
         }
@@ -76,6 +103,7 @@ public class AsIntStream implements IntStream {
 
     @Override
     public IntStream map(IntUnaryOperator mapper) {
+        checkEmptyStream();
         Iterable<Integer> mapped = () -> new MapIterator(mapper);
 
         return new AsIntStream(mapped.iterator());
@@ -83,6 +111,7 @@ public class AsIntStream implements IntStream {
 
     @Override
     public IntStream flatMap(IntToIntStreamFunction func) {
+        checkEmptyStream();
         Iterable<Integer> flatted = () -> new FlatMapIterator(func);
 
         return new AsIntStream(flatted.iterator());
@@ -118,33 +147,9 @@ public class AsIntStream implements IntStream {
         return innerCol.iterator();
     }
 
-    private void checkInnerCol() {
-        if (this.innerCol.isEmpty()) {
+    private void checkEmptyStream() {
+        if (!this.iterator.hasNext()) {
             throw new IllegalArgumentException("Stream is empty!");
-        }
-    }
-
-    private class FilterIterator implements Iterator<Integer>{
-        private IntPredicate predicate;
-
-        FilterIterator(IntPredicate predicate) {
-            this.predicate = predicate;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Integer next() {
-            do {
-                int temp = iterator.next();
-                if (predicate.test(temp)) {
-                    return temp;
-                }
-            } while (hasNext());
-            return null;
         }
     }
 
@@ -174,6 +179,7 @@ public class AsIntStream implements IntStream {
         FlatMapIterator(IntToIntStreamFunction streamFunction) {
             this.streamFunction = streamFunction;
             this.meta = new ArrayList<>();
+            this.metaIterator = Collections.emptyIterator();
         }
 
         @Override
@@ -183,8 +189,9 @@ public class AsIntStream implements IntStream {
 
         @Override
         public Integer next() {
-            if (iterator.hasNext()) {
-                IntStream temp = this.streamFunction.applyAsIntStream(iterator.next());
+            while (iterator.hasNext()) {
+                int next = iterator.next();
+                IntStream temp = this.streamFunction.applyAsIntStream(next);
                 for (int i: temp.toArray()) {
                     this.meta.add(i);
                 }
