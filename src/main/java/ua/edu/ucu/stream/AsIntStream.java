@@ -2,12 +2,11 @@ package ua.edu.ucu.stream;
 
 import ua.edu.ucu.function.*;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class AsIntStream implements IntStream {
     private Integer counter;
-    ArrayList<Integer> innerCol;
+    private Integer streamSum;
     private Iterator<Integer> iterator;
     
     private AsIntStream(Iterator<Integer> iter) {
@@ -20,41 +19,28 @@ public class AsIntStream implements IntStream {
 
     @Override
     public Double average() {
-        long sample = 0;
-        this.counter = 0;
-        while (this.iterator.hasNext()) {
-            sample += this.iterator.next();
-            this.counter++;
+        if (this.streamSum == null) {
+            sum();
+        }
+        if (this.counter == null) {
+            count();
         }
         if (this.counter==0) {
             return 0.0;
-        } else {
-            return (double) sample/this.counter;
         }
+        return (double) this.streamSum/this.counter;
     }
 
     @Override
     public Integer max() {
         checkEmptyStream();
-        int res = Integer.MIN_VALUE;
-        for (int i: this.innerCol) {
-            if (i > res) {
-                res = i;
-            }
-        }
-        return res;
+        return reduce(Integer.MIN_VALUE, Math::max);
     }
 
     @Override
     public Integer min() {
         checkEmptyStream();
-        int res = Integer.MAX_VALUE;
-        for (int i: this.innerCol) {
-            if (i < res) {
-                res = i;
-            }
-        }
-        return res;
+        return reduce(Integer.MAX_VALUE, Math::min);
     }
 
     @Override
@@ -63,7 +49,7 @@ public class AsIntStream implements IntStream {
             return this.counter;
         }
         this.counter = 0;
-        while (iterator.hasNext()) {
+        while (this.iterator.hasNext()) {
             iterator.next();
             this.counter++;
         }
@@ -72,11 +58,17 @@ public class AsIntStream implements IntStream {
 
     @Override
     public Integer sum() {
-        int res = 0;
-        while (this.iterator.hasNext()) {
-            res += iterator.next();
+        if (this.streamSum != null) {
+            return this.streamSum;
         }
-        return res;
+        this.streamSum = 0;
+        this.counter = 0;
+
+        while (this.iterator.hasNext()) {
+            this.streamSum += iterator.next();
+            this.counter++;
+        }
+        return this.streamSum;
     }
 
     @Override

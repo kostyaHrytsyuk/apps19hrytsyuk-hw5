@@ -4,14 +4,6 @@ import ua.edu.ucu.stream.*;
 
 public class StreamApp {
 
-    // 1. Що мається на увазі під термінальним методом?
-    // 2. Чи можливо створити метод який би приймав Action і обходив масив відповідно
-    // 3. Що краще використати як внутрішню колекцію? ArrayList, Queue?
-    // 4. Як уникнути дублювання коду? Приклад з першого завдання.
-    // 5. Я хочу використати разом з Ітератором ще й Декоратор, щоб реалізувати "ліниві обчислення". Чи це не занадто багато патернів?
-    // 6. Чи Of також робити "лінивим"?
-    // 7. Що поверне filter якщо вся колекція не відповідає предикату?
-
     public static int streamOperations(IntStream intStream) {
         double res = intStream.filter(x -> x > 0)   // 1, 2, 3
                                 .map(x -> x * x)        // 1, 4, 9
@@ -20,14 +12,13 @@ public class StreamApp {
         return (int) res;
     }
 
-    public static int[] streamToArray(IntStream intStream) {        
-        int[] intArr = intStream.toArray();
-        return intArr;
+    public static int[] streamToArray(IntStream intStream) {
+        return intStream.toArray();
     }
 
     public static String streamForEach(IntStream intStream) {        
         StringBuilder str = new StringBuilder();
-        intStream.forEach(x -> str.append(x));
+        intStream.forEach(str::append);
         return str.toString();
     }
 
