@@ -25,7 +25,7 @@ public class AsIntStream implements IntStream {
         if (this.counter == null) {
             count();
         }
-        if (this.counter==0) {
+        if (this.counter == 0) {
             return 0.0;
         }
         return (double) this.streamSum/this.counter;
@@ -145,7 +145,7 @@ public class AsIntStream implements IntStream {
         }
     }
 
-    private class MapIterator implements Iterator<Integer>{
+    private class MapIterator implements Iterator<Integer> {
         private IntUnaryOperator operator;
 
         MapIterator(IntUnaryOperator operator) {

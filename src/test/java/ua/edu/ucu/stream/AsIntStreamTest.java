@@ -22,6 +22,13 @@ public class AsIntStreamTest {
     }
 
     @Test
+    public void testAverageEmptyStream() {
+        double expectedValue = 0;
+
+        assertEquals(expectedValue, AsIntStream.of().average(), Integer.MIN_VALUE);
+    }
+
+    @Test
     public void testMax() {
         Integer expectedValue = 30;
 
@@ -53,11 +60,28 @@ public class AsIntStreamTest {
     }
 
     @Test
+    public void testInitializedCount() {
+        long expectedValue = 5;
+
+        this.intStream.sum();
+
+        assertEquals(expectedValue, this.intStream.count());
+    }
+
+    @Test
     public void testSum() {
         Integer expectedValue = 30;
 
         assertEquals(expectedValue, this.intStream.sum());
     }
+
+    @Test
+    public void testInitializedSum() {
+        Integer expectedValue = this.intStream.sum();
+
+        assertEquals(expectedValue, this.intStream.sum());
+    }
+
 
     @Test
     public void testFilter() {
